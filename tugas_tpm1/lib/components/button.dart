@@ -40,10 +40,10 @@ class Button extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         spacing: 8,
         children: [
-          if (leadingIcon != null) leadingIcon!,
+          ?leadingIcon,
           Text(text, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, letterSpacing: 0.8),),
           if (trailingIcon != null) SizedBox(width: 8),
-          if (trailingIcon != null) trailingIcon!,
+          ?trailingIcon,
           ],
         ),
       ),
