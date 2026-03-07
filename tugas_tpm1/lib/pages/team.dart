@@ -18,7 +18,7 @@ class _TheTeamState extends State<TheTeam> {
   final List<Map<String, String>> anggota = [
     {"nama": "Muhammad Ruhul Jadid", "nim": "123230046"},
     {"nama": "Aulia Putri Naharani", "nim": "123230047"},
-    {"nama": "Gradiva Arya Wicaksana", "nim": "1232300xx"},
+    {"nama": "Gradiva Arya Wicaksana", "nim": "123230089"},
     {"nama": "Brian Zahran Putra", "nim": "123230195"},
   ];
 
