@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tugas_tpm1/components/Input.dart';
+import 'package:tugas_tpm1/components/button.dart';
 
 class PyramidScreen extends StatefulWidget {
   const PyramidScreen({super.key});
@@ -48,8 +49,8 @@ class _PyramidScreenState extends State<PyramidScreen> {
               Row(
                 spacing: 12,
                 children: [
-                Expanded(child: ElevatedButton(onPressed: (){}, child: Text('Hitung'))),
-                Expanded(child: ElevatedButton(onPressed: (){}, child: Text('Reset'))),
+                Expanded(child: Button(type: ButtonType.primary, text: 'Hitung', leadingIcon: Icon(Icons.calculate), onPressed: (){})),
+                Expanded(child: Button(type: ButtonType.secondary, text: 'Reset', onPressed: (){})),
               ],)
             ],
           )
