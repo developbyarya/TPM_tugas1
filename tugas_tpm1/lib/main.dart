@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tugas_tpm1/pages/stopwatch_screen.dart';
 import 'package:tugas_tpm1/pages/sum_calculator_screen.dart';
 import 'package:tugas_tpm1/pages/team.dart';
+import 'pages/calculator_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,7 +34,7 @@ class MyApp extends StatelessWidget {
         '/': (context) => const AuthGate(),
         '/home': (context) => const HomeScreen(),
         '/group-data': (context) => const TheTeam(),
-        // '/calculator': (context) => const CalculatorScreen(),
+        '/calculator': (context) => const CalculatorScreen(),
         '/number-checker': (context) => const CekBilanganScreen(),
         '/sum-calculator': (context) => const CharacterCounterScreen(),
         '/stopwatch': (context) => const StopwatchScreen(),
