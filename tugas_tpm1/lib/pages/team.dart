@@ -30,13 +30,6 @@ class _TheTeamState extends State<TheTeam> {
           "About Team",
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
-        actions: [
-          // Logout
-          IconButton(
-            onPressed: logout,
-            icon: const Icon(Icons.logout),
-          )
-        ],
       ),
       
       body: Padding(

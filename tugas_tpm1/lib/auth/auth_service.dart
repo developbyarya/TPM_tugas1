@@ -29,4 +29,10 @@ class AuthService {
     final user = session?.user;
     return user?.email;
   }
+
+  String? getCurrentUserName() {
+  final session = _supabase.auth.currentSession;
+  final user = session?.user;
+  return user?.userMetadata?['name'];
+}
 }

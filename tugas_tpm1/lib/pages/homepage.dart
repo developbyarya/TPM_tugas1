@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:tugas_tpm1/auth/auth_service.dart';
 
 class HomeScreen extends StatelessWidget {
+  
   const HomeScreen({super.key});
+
+  void logout() async {
+    final authService = AuthService();
+
+    await authService.signOut();
+  }
 
   @override
   Widget build(BuildContext context) {
-    const String username = "User";
+    final authService = AuthService();
+    final username = authService.getCurrentUserName() ?? "User";
 
     return Scaffold(
       body: SafeArea(
@@ -14,7 +23,7 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Halo, $username',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
@@ -40,9 +49,7 @@ class HomeScreen extends StatelessWidget {
               
               Center(
                 child: TextButton.icon(
-                  onPressed: () {
-                    Navigator.pushReplacementNamed(context, '/');
-                  },
+                  onPressed: logout,
                   icon: const Icon(Icons.logout, color: Colors.red),
                   label: const Text('Log Out', style: TextStyle(color: Colors.red)),
                 ),
