@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
 
+// Class bantuan untuk menyimpan riwayat setiap langkah perhitungan
+class CalcStep {
+  final String operation;
+  final double value;
+  CalcStep({required this.operation, required this.value});
+}
+
 class CalculatorScreen extends StatefulWidget {
   const CalculatorScreen({super.key});
 
@@ -8,259 +15,201 @@ class CalculatorScreen extends StatefulWidget {
 }
 
 class _CalculatorScreenState extends State<CalculatorScreen> {
-  String _display = "0";
-  String? _firstNum;
-  String? _operation;
-  bool _waitingForSecond = false;
-  String _expression = "";
-  bool _justCalculated = false;
+  final TextEditingController _controller = TextEditingController();
+  
+  // State: Menyimpan seluruh riwayat angka dan operator yang dimasukkan
+  final List<CalcStep> _steps = [];
+  String _errorMessage = '';
 
-  void _handleNumber(String num) {
-    if (_justCalculated) {
-      setState(() {
-        _display = num;
-        _expression = "";
-        _justCalculated = false;
-      });
+  // Getter (Logika Inti): Menghitung total dari atas ke bawah secara real-time
+  double get _currentTotal {
+    if (_steps.isEmpty) return 0;
+    
+    double total = 0;
+    for (int i = 0; i < _steps.length; i++) {
+      var step = _steps[i];
+      
+      // Khusus angka pertama, kita jadikan sebagai nilai dasar (base value)
+      if (i == 0) {
+        if (step.operation == '-') {
+          total = -step.value;
+        } else {
+          total = step.value; 
+        }
+      } else {
+        // Angka kedua dan seterusnya diproses sesuai operator
+        if (step.operation == '+') total += step.value;
+        else if (step.operation == '-') total -= step.value;
+        else if (step.operation == '×') total *= step.value;
+        else if (step.operation == '÷') {
+          if (step.value != 0) {
+            total /= step.value;
+          } else {
+            return double.nan; // Mencegah error dibagi 0
+          }
+        }
+      }
+    }
+    return total;
+  }
+
+  // Fungsi merapikan tampilan angka desimal
+  String _formatNumber(double n) {
+    if (n.isNaN) return 'Error: Dibagi 0';
+    if (n.isInfinite) return '∞';
+    return n % 1 == 0 
+        ? n.toInt().toString() 
+        : n.toStringAsFixed(4).replaceAll(RegExp(r'0*$'), '').replaceAll(RegExp(r'\.$'), '');
+  }
+
+  // Fungsi saat tombol operasi ditekan
+  void _addStep(String op) {
+    final double? val = double.tryParse(_controller.text);
+    if (val == null) {
+      setState(() => _errorMessage = 'Masukkan angka yang valid!');
       return;
     }
-    if (_waitingForSecond) {
-      setState(() {
-        _display = num;
-        _waitingForSecond = false;
-      });
-      return;
-    }
+
     setState(() {
-      if (_display == "0" && num != ".") {
-        _display = num;
-      } else {
-        if (num == "." && _display.contains(".")) return;
-        if (_display.length >= 12) return;
-        _display += num;
-      }
+      _steps.add(CalcStep(operation: op, value: val));
+      _controller.clear();
+      _errorMessage = '';
     });
   }
 
-  void _handleOperation(String op) {
+  void _removeStep(int index) {
+    setState(() => _steps.removeAt(index));
+  }
+
+  void _clearAll() {
     setState(() {
-      _justCalculated = false;
-      if (_operation != null && !_waitingForSecond) {
-        double a = double.tryParse(_firstNum ?? "0") ?? double.nan;
-        double b = double.tryParse(_display) ?? double.nan;
-        
-        double result = _compute(a, b, _operation!);
-        String resultStr = _formatResult(result);
-        
-        _display = resultStr;
-        _firstNum = resultStr;
-        _expression = "$resultStr $op";
-      } else {
-        _firstNum = _display;
-        _expression = "$_display $op";
-      }
-      _operation = op;
-      _waitingForSecond = true;
+      _steps.clear();
+      _controller.clear();
+      _errorMessage = '';
     });
   }
 
-  double _compute(double a, double b, String op) {
-    if (op == "+") return a + b;
-    if (op == "-") return a - b;
-    if (op == "×") return a * b;
-    if (op == "÷") {
-      if (b == 0) return double.nan;
-      return a / b;
-    }
-    return b;
-  }
-
-  String _formatResult(double n) {
-    if (n.isNaN) return "Error";
-    if (n.isInfinite) return "∞";
-    
-    // Menghindari 0 berlebih di belakang desimal (mirip toFixed di JS)
-    String str = (n % 1 == 0) ? n.toInt().toString() : n.toStringAsFixed(10);
-    if (str.contains('.')) {
-      str = str.replaceAll(RegExp(r'0*$'), ''); // Hapus trailing zero
-      str = str.replaceAll(RegExp(r'\.$'), ''); // Hapus titik jika tidak ada desimal lagi
-    }
-    
-    return str.length > 12 ? n.toStringAsExponential(4) : str;
-  }
-
-  void _handleEquals() {
-    if (_operation == null || _firstNum == null) return;
-    
-    double a = double.tryParse(_firstNum!) ?? double.nan;
-    double b = double.tryParse(_display) ?? double.nan;
-    
-    double result = _compute(a, b, _operation!);
-    String resultStr = _formatResult(result);
-    
-    setState(() {
-      _expression = "$_firstNum $_operation $_display =";
-      _display = resultStr;
-      _firstNum = null;
-      _operation = null;
-      _waitingForSecond = false;
-      _justCalculated = true;
-    });
-  }
-
-  void _handleClear() {
-    setState(() {
-      _display = "0";
-      _firstNum = null;
-      _operation = null;
-      _waitingForSecond = false;
-      _expression = "";
-      _justCalculated = false;
-    });
-  }
-
-  void _handleCE() {
-    setState(() {
-      _display = "0";
-      _waitingForSecond = false;
-      _justCalculated = false;
-    });
-  }
-
-  void _handleBackspace() {
-    setState(() {
-      if (_justCalculated) {
-        _handleClear();
-        return;
-      }
-      if (_display == "Error" || _display == "∞" || _display.length <= 1) {
-        _display = "0";
-      } else {
-        _display = _display.substring(0, _display.length - 1);
-      }
-    });
-  }
-
-  void _handleToggleSign() {
-    setState(() {
-      if (_display == "0" || _display == "Error" || _display == "∞") return;
-      if (_display.startsWith("-")) {
-        _display = _display.substring(1);
-      } else {
-        _display = "-$_display";
-      }
-    });
-  }
-
-  bool _isOpActive(String op) => _operation == op && _waitingForSecond;
-
-  // Helpers untuk styling dinamis
-  double _getDisplayFontSize() {
-    if (_display.length > 10) return 32.0;
-    if (_display.length > 7) return 48.0;
-    if (_display.length > 5) return 60.0;
-    return 72.0;
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1C1C1E),
-      appBar: AppBar(
-        title: const Text('Kalkulator'),
-        backgroundColor: const Color(0xFF1C1C1E),
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: SafeArea(
+      backgroundColor: Colors.grey.shade50,
+      appBar: AppBar(title: const Text('Kalkulator Berantai')),
+      body: Padding(
+        padding: const EdgeInsets.all(24.0),
         child: Column(
           children: [
-            // Area Display
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.only(right: 24, bottom: 16, left: 24, top: 8),
-                alignment: Alignment.bottomRight,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      _expression,
-                      style: const TextStyle(color: Colors.white54, fontSize: 16),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 8),
-                    AnimatedDefaultTextStyle(
-                      duration: const Duration(milliseconds: 100),
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: _getDisplayFontSize(),
-                        fontWeight: FontWeight.w300,
-                        height: 1.0, // Menyesuaikan line-height
-                      ),
-                      child: Text(_display),
-                    ),
-                  ],
-                ),
+            // 1. Panel Hasil (Total Real-time)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: const Color(0xFF3267E3),
+                borderRadius: BorderRadius.circular(16),
               ),
-            ),
-
-            // Area Keypad
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Baris 1: AC, CE, +/-, ÷
-                  Row(
-                    children: [
-                      _buildBtn("AC", const Color(0xFFA5A5A5), const Color(0xFF1C1C1E), _handleClear),
-                      _buildBtn("CE", const Color(0xFFA5A5A5), const Color(0xFF1C1C1E), _handleCE),
-                      _buildBtn("+/−", const Color(0xFFA5A5A5), const Color(0xFF1C1C1E), _handleToggleSign),
-                      _buildOpBtn("÷"),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  // Baris 2: 7, 8, 9, ×
-                  Row(
-                    children: [
-                      _buildNumBtn("7"),
-                      _buildNumBtn("8"),
-                      _buildNumBtn("9"),
-                      _buildOpBtn("×"),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  // Baris 3: 4, 5, 6, -
-                  Row(
-                    children: [
-                      _buildNumBtn("4"),
-                      _buildNumBtn("5"),
-                      _buildNumBtn("6"),
-                      _buildOpBtn("-"),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  // Baris 4: 1, 2, 3, +
-                  Row(
-                    children: [
-                      _buildNumBtn("1"),
-                      _buildNumBtn("2"),
-                      _buildNumBtn("3"),
-                      _buildOpBtn("+"),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  // Baris 5: 0, ., ⌫, =
-                  Row(
-                    children: [
-                      _buildNumBtn("0"),
-                      _buildNumBtn("."),
-                      _buildBtn("⌫", const Color(0xFFA5A5A5), const Color(0xFF1C1C1E), _handleBackspace),
-                      _buildBtn("=", const Color(0xFF30D158), Colors.white, _handleEquals, isLargeText: true),
-                    ],
+                  const Text('Total Perhitungan', style: TextStyle(color: Colors.white70, fontSize: 14)),
+                  const SizedBox(height: 8),
+                  Text(
+                    _steps.isEmpty ? '0' : _formatNumber(_currentTotal),
+                    style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold),
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // 2. Input Angka
+            TextField(
+              controller: _controller,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                hintText: 'Masukkan angka...',
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              ),
+            ),
+            
+            if (_errorMessage.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Align(alignment: Alignment.centerLeft, child: Text(_errorMessage, style: const TextStyle(color: Colors.red, fontSize: 13))),
+            ],
+            const SizedBox(height: 16),
+
+            // 3. Tombol 4 Operasi Kalkulator
+            Row(
+              children: [
+                Expanded(child: _buildOpBtn('+ Tambah', Colors.green, () => _addStep('+'))),
+                const SizedBox(width: 8),
+                Expanded(child: _buildOpBtn('- Kurang', Colors.red, () => _addStep('-'))),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(child: _buildOpBtn('× Kali', Colors.purple, () => _addStep('×'))),
+                const SizedBox(width: 8),
+                Expanded(child: _buildOpBtn('÷ Bagi', Colors.orange, () => _addStep('÷'))),
+              ],
+            ),
+            const SizedBox(height: 24),
+
+            // 4. Header Riwayat
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Riwayat Kalkulasi', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                if (_steps.isNotEmpty)
+                  TextButton.icon(
+                    onPressed: _clearAll,
+                    icon: const Icon(Icons.delete_sweep, color: Colors.red, size: 18),
+                    label: const Text('Hapus Semua', style: TextStyle(color: Colors.red, fontSize: 13)),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 8),
+
+            // 5. List Riwayat Hitung
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+                child: _steps.isEmpty
+                    ? const Center(child: Text('Ketik angka dan pilih operator di atas', style: TextStyle(color: Colors.grey)))
+                    : ListView.separated(
+                        itemCount: _steps.length,
+                        separatorBuilder: (context, index) => Divider(color: Colors.grey.shade100, height: 1),
+                        itemBuilder: (context, index) {
+                          final step = _steps[index];
+                          return ListTile(
+                            leading: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(color: Colors.blue.shade50, borderRadius: BorderRadius.circular(8)),
+                              alignment: Alignment.center,
+                              child: Text(step.operation, style: const TextStyle(color: Color(0xFF3267E3), fontSize: 18, fontWeight: FontWeight.bold)),
+                            ),
+                            title: Text(_formatNumber(step.value), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.close, color: Colors.grey, size: 20),
+                              onPressed: () => _removeStep(index),
+                            ),
+                          );
+                        },
+                      ),
               ),
             ),
           ],
@@ -269,50 +218,16 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     );
   }
 
-  // Builder Button untuk Angka (Warna default Putih, Teks Gelap)
-  Widget _buildNumBtn(String text) {
-    return _buildBtn(text, Colors.white, const Color(0xFF1C1C1E), () => _handleNumber(text), isLargeText: true);
-  }
-
-  // Builder Button untuk Operator (Warna Oranye dinamis)
-  Widget _buildOpBtn(String op) {
-    bool isActive = _isOpActive(op);
-    return _buildBtn(
-      op,
-      isActive ? Colors.white : const Color(0xFFFF9F0A),
-      isActive ? const Color(0xFFFF9F0A) : Colors.white,
-      () => _handleOperation(op),
-      isLargeText: true,
-    );
-  }
-
-  // Widget Button Dasar
-  Widget _buildBtn(String text, Color bgColor, Color textColor, VoidCallback onTap, {bool isLargeText = false}) {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(40), // Bentuk membulat (pill/circle)
-          child: Ink(
-            height: 72,
-            decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: BorderRadius.circular(40),
-            ),
-            child: Center(
-              child: Text(
-                text,
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: isLargeText ? 28 : 20,
-                  fontWeight: isLargeText ? FontWeight.w500 : FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
-        ),
+  Widget _buildOpBtn(String text, Color color, VoidCallback onPressed) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color,
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        elevation: 0,
       ),
+      onPressed: onPressed,
+      child: Text(text, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
     );
   }
 }
