@@ -36,10 +36,21 @@ class _CekBilanganScreenState extends State<CekBilanganScreen> {
 
   void _cekBilangan() {
     final text = _numberController.text.trim();
+  if (text.length > 19){
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Angka terlalu besar"), backgroundColor: Colors.red,));
+    return;
+  }
+
     if (text.isEmpty) return;
 
     final number = int.tryParse(text);
-    if (number == null) return;
+    if (number == null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Input Invalid!"), backgroundColor: Colors.red,));
+      setState(() {
+        _showResult = false;
+      });
+      return;
+    }
 
     setState(() {
       _checkedNumber = number;

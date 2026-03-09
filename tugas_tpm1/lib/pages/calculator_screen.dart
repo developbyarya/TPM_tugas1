@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-// Class bantuan untuk menyimpan riwayat setiap langkah perhitungan
+// Class bantuan untuk menyimpan riwayat perhitungan
 class CalcStep {
   final String operation;
   final double value;
@@ -16,12 +16,9 @@ class CalculatorScreen extends StatefulWidget {
 
 class _CalculatorScreenState extends State<CalculatorScreen> {
   final TextEditingController _controller = TextEditingController();
-  
-  // State: Menyimpan seluruh riwayat angka dan operator yang dimasukkan
   final List<CalcStep> _steps = [];
-  String _errorMessage = '';
 
-  // Getter (Logika Inti): Menghitung total dari atas ke bawah secara real-time
+  // Getter Logika Inti: Menghitung total dari atas ke bawah
   double get _currentTotal {
     if (_steps.isEmpty) return 0;
     
@@ -29,15 +26,9 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     for (int i = 0; i < _steps.length; i++) {
       var step = _steps[i];
       
-      // Khusus angka pertama, kita jadikan sebagai nilai dasar (base value)
       if (i == 0) {
-        if (step.operation == '-') {
-          total = -step.value;
-        } else {
-          total = step.value; 
-        }
+        total = (step.operation == '-') ? -step.value : step.value;
       } else {
-        // Angka kedua dan seterusnya diproses sesuai operator
         if (step.operation == '+') total += step.value;
         else if (step.operation == '-') total -= step.value;
         else if (step.operation == '×') total *= step.value;
@@ -45,7 +36,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
           if (step.value != 0) {
             total /= step.value;
           } else {
-            return double.nan; // Mencegah error dibagi 0
+            return double.nan;
           }
         }
       }
@@ -53,27 +44,82 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     return total;
   }
 
-  // Fungsi merapikan tampilan angka desimal
+  // Fungsi untuk memunculkan pesan error via SnackBar
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          ' $message', 
+          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)
+        ),
+        backgroundColor: Colors.red.shade600,
+        behavior: SnackBarBehavior.floating, // Mengambang
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  // Fungsi Formatting Output
   String _formatNumber(double n) {
-    if (n.isNaN) return 'Error: Dibagi 0';
+    if (n.isNaN) return 'Error';
     if (n.isInfinite) return '∞';
     return n % 1 == 0 
         ? n.toInt().toString() 
         : n.toStringAsFixed(4).replaceAll(RegExp(r'0*$'), '').replaceAll(RegExp(r'\.$'), '');
   }
 
-  // Fungsi saat tombol operasi ditekan
+  // Fungsi Eksekusi & Validasi (Error Handling)
   void _addStep(String op) {
-    final double? val = double.tryParse(_controller.text);
-    if (val == null) {
-      setState(() => _errorMessage = 'Masukkan angka yang valid!');
+    final String inputText = _controller.text.trim();
+
+    // 1. Cek Input Kosong
+    if (inputText.isEmpty) {
+      _showError('Input angka tidak boleh kosong!');
       return;
     }
 
+    // 2. Cek Karakter Terlalu Panjang
+    if (inputText.length > 15) {
+      _showError('Angka terlalu panjang (Maksimal 15 digit)!');
+      return;
+    }
+
+    // 3. Cek Format Angka
+    final double? val = double.tryParse(inputText);
+    if (val == null) {
+      _showError('Format angka tidak valid!');
+      return;
+    }
+
+    // 4. Cek Pembagian dengan Nol
+    if (op == '÷' && val == 0) {
+      _showError('Tidak dapat membagi bilangan dengan nol!');
+      return;
+    }
+
+    // 5. SIMULASI KALKULASI UNTUK MENCEGAH OVERFLOW MEMORI
+    double projectedTotal = _currentTotal;
+    if (_steps.isEmpty) {
+      projectedTotal = (op == '-') ? -val : val;
+    } else {
+      if (op == '+') projectedTotal += val;
+      else if (op == '-') projectedTotal -= val;
+      else if (op == '×') projectedTotal *= val;
+      else if (op == '÷') projectedTotal /= val;
+    }
+
+    // Cek batas maksimum Int 64-bit (9.22 x 10^18)
+    // Jika lewat dari ini, .toInt() akan stuck di 9223372036854775807
+    if (projectedTotal.isInfinite || projectedTotal.abs() >= 9223372036854775000) {
+      _showError('Hasil kalkulasi ditolak! Melampaui batas maksimum sistem.');
+      return;
+    }
+
+    // Lolos semua pengecekan -> Masukkan ke dalam riwayat kalkulator
     setState(() {
       _steps.add(CalcStep(operation: op, value: val));
       _controller.clear();
-      _errorMessage = '';
     });
   }
 
@@ -85,7 +131,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     setState(() {
       _steps.clear();
       _controller.clear();
-      _errorMessage = '';
     });
   }
 
@@ -104,7 +149,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         padding: const EdgeInsets.all(24.0),
         child: Column(
           children: [
-            // 1. Panel Hasil (Total Real-time)
+            // Panel Total Hasil
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
@@ -117,36 +162,38 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                 children: [
                   const Text('Total Perhitungan', style: TextStyle(color: Colors.white70, fontSize: 14)),
                   const SizedBox(height: 8),
-                  Text(
-                    _steps.isEmpty ? '0' : _formatNumber(_currentTotal),
-                    style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold),
+                  // FittedBox membantu agar teks mengecil otomatis jika angka mulai panjang
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      _steps.isEmpty ? '0' : _formatNumber(_currentTotal),
+                      style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 24),
 
-            // 2. Input Angka
+            // Input TextField
             TextField(
               controller: _controller,
-              keyboardType: TextInputType.number,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+              maxLength: 15, 
               decoration: InputDecoration(
                 hintText: 'Masukkan angka...',
                 filled: true,
                 fillColor: Colors.white,
+                counterText: '', 
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
                 enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               ),
             ),
-            
-            if (_errorMessage.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Align(alignment: Alignment.centerLeft, child: Text(_errorMessage, style: const TextStyle(color: Colors.red, fontSize: 13))),
-            ],
             const SizedBox(height: 16),
 
-            // 3. Tombol 4 Operasi Kalkulator
+            // Tombol Operasi Dasar
             Row(
               children: [
                 Expanded(child: _buildOpBtn('+ Tambah', Colors.green, () => _addStep('+'))),
@@ -164,7 +211,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
             ),
             const SizedBox(height: 24),
 
-            // 4. Header Riwayat
+            // Header Daftar Riwayat
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -179,7 +226,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
             ),
             const SizedBox(height: 8),
 
-            // 5. List Riwayat Hitung
+            // Daftar Riwayat
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
