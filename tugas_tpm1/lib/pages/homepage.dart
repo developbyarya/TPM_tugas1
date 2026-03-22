@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:tugas_tpm1/auth/auth_service.dart';
 
 class HomeScreen extends StatelessWidget {
-  
   const HomeScreen({super.key});
 
   void logout() async {
@@ -33,25 +32,64 @@ class HomeScreen extends StatelessWidget {
                 style: TextStyle(fontSize: 14, color: Colors.grey),
               ),
               const SizedBox(height: 32),
-              
+
               Expanded(
                 child: ListView(
                   children: [
-                    _buildMenuItem(context, 'About Team', Icons.info_outline, '/group-data'),
-                    _buildMenuItem(context, 'Calculator', Icons.calculate_outlined, '/calculator'),
-                    _buildMenuItem(context, 'Check Number', Icons.format_list_numbered, '/number-checker'),
-                    _buildMenuItem(context, 'Total Number', Icons.functions, '/sum-calculator'),
-                    _buildMenuItem(context, 'Stopwatch', Icons.timer_outlined, '/stopwatch'),
-                    _buildMenuItem(context, 'Pyramid Formula', Icons.change_history, '/pyramid'),
+                    _buildMenuItem(
+                      context,
+                      'About Team',
+                      Icons.info_outline,
+                      '/group-data',
+                    ),
+                    _buildMenuItem(
+                      context,
+                      'Calculator',
+                      Icons.calculate_outlined,
+                      '/calculator',
+                    ),
+                    _buildMenuItem(
+                      context,
+                      'Check Number',
+                      Icons.format_list_numbered,
+                      '/number-checker',
+                    ),
+                    _buildMenuItem(
+                      context,
+                      'Total Number',
+                      Icons.functions,
+                      '/sum-calculator',
+                    ),
+                    _buildMenuItem(
+                      context,
+                      'Stopwatch',
+                      Icons.timer_outlined,
+                      '/stopwatch',
+                    ),
+                    _buildMenuItem(
+                      context,
+                      'Pyramid Formula',
+                      Icons.change_history,
+                      '/pyramid',
+                    ),
+                    _buildMenuItem(
+                      context,
+                      'Date Calculator',
+                      Icons.calendar_today_outlined,
+                      '/date-calculator',
+                    ),
                   ],
                 ),
               ),
-              
+
               Center(
                 child: TextButton.icon(
                   onPressed: logout,
                   icon: const Icon(Icons.logout, color: Colors.red),
-                  label: const Text('Log Out', style: TextStyle(color: Colors.red)),
+                  label: const Text(
+                    'Log Out',
+                    style: TextStyle(color: Colors.red),
+                  ),
                 ),
               ),
             ],
@@ -61,7 +99,12 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuItem(BuildContext context, String title, IconData icon, String route) {
+  Widget _buildMenuItem(
+    BuildContext context,
+    String title,
+    IconData icon,
+    String route,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       child: ElevatedButton(
@@ -75,7 +118,7 @@ class HomeScreen extends StatelessWidget {
         ),
         onPressed: () {
           if (ModalRoute.of(context)?.settings.name != route) {
-             Navigator.pushNamed(context, route);
+            Navigator.pushNamed(context, route);
           }
         },
         child: Row(

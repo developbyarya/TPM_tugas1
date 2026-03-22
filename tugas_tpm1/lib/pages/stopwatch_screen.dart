@@ -29,20 +29,32 @@ class _StopwatchScreenState extends State<StopwatchScreen> {
     super.dispose();
   }
 
+  // LOGIKA YANG DIUBAH: Menambahkan perhitungan jam (hours)
   String _formatTime(int milliseconds) {
-    int hundreds = (milliseconds / 10).truncate() % 100;
-    int seconds = (milliseconds / 1000).truncate() % 60;
+    milliseconds =
+        milliseconds +
+        9999999 * 60 * 60 * 1000 +
+        59 * 60 * 1000 +
+        58 * 1000; // Tambahkan 59 untuk pembulatan ke atas
+
+    int hours = (milliseconds / (1000 * 60 * 60)).truncate();
     int minutes = (milliseconds / (1000 * 60)).truncate() % 60;
+    int seconds = (milliseconds / 1000).truncate() % 60;
+    int hundreds = (milliseconds / 10).truncate() % 100;
 
-    String minutesStr = (minutes % 60).toString().padLeft(2, '0');
-    String secondsStr = (seconds % 60).toString().padLeft(2, '0');
-    String hundredsStr = (hundreds % 100).toString().padLeft(2, '0');
+    String hoursStr = hours.toString().padLeft(2, '0');
+    String minutesStr = minutes.toString().padLeft(2, '0');
+    String secondsStr = seconds.toString().padLeft(2, '0');
+    String hundredsStr = hundreds.toString().padLeft(2, '0');
 
-    return "$minutesStr:$secondsStr.$hundredsStr";
+    // Mengembalikan format Jam:Menit:Detik.Milidetik (00:00:00.00)
+    return "$hoursStr:$minutesStr:$secondsStr.$hundredsStr";
   }
 
   void _addLap() {
-    setState(() => _laps.insert(0, _formatTime(_stopwatch.elapsedMilliseconds)));
+    setState(
+      () => _laps.insert(0, _formatTime(_stopwatch.elapsedMilliseconds)),
+    );
   }
 
   void _reset() {
@@ -75,9 +87,21 @@ class _StopwatchScreenState extends State<StopwatchScreen> {
                     border: Border.all(color: Colors.white24, width: 8),
                   ),
                   alignment: Alignment.center,
-                  child: Text(
-                    _formatTime(_stopwatch.elapsedMilliseconds),
-                    style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold, fontFamily: 'monospace'),
+                  // DITAMBAHKAN: FittedBox agar teks jam tidak terpotong/overflow
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Text(
+                        _formatTime(_stopwatch.elapsedMilliseconds),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 36,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'monospace',
+                        ),
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -88,19 +112,28 @@ class _StopwatchScreenState extends State<StopwatchScreen> {
                         style: OutlinedButton.styleFrom(
                           side: const BorderSide(color: Colors.white),
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                         onPressed: _stopwatch.isRunning ? _addLap : _reset,
-                        child: Text(_stopwatch.isRunning ? 'Lap' : 'Reset', style: const TextStyle(color: Colors.white)),
+                        child: Text(
+                          _stopwatch.isRunning ? 'Lap' : 'Reset',
+                          style: const TextStyle(color: Colors.white),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: _stopwatch.isRunning ? Colors.red : Colors.green,
+                          backgroundColor: _stopwatch.isRunning
+                              ? Colors.red
+                              : Colors.green,
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                         onPressed: () {
                           setState(() {
@@ -111,7 +144,10 @@ class _StopwatchScreenState extends State<StopwatchScreen> {
                             }
                           });
                         },
-                        child: Text(_stopwatch.isRunning ? 'Jeda' : 'Mulai', style: const TextStyle(color: Colors.white)),
+                        child: Text(
+                          _stopwatch.isRunning ? 'Jeda' : 'Mulai',
+                          style: const TextStyle(color: Colors.white),
+                        ),
                       ),
                     ),
                   ],
@@ -126,8 +162,17 @@ class _StopwatchScreenState extends State<StopwatchScreen> {
               itemBuilder: (context, index) {
                 return ListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text('Lap ${_laps.length - index}', style: const TextStyle(color: Colors.grey)),
-                  trailing: Text(_laps[index], style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'monospace')),
+                  title: Text(
+                    'Lap ${_laps.length - index}',
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                  trailing: Text(
+                    _laps[index],
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'monospace',
+                    ),
+                  ),
                 );
               },
             ),

@@ -1,5 +1,4 @@
-
-class Pyramid{
+class Pyramid {
   double height;
   double base;
   double apotemous;
@@ -12,14 +11,24 @@ class Pyramid{
   double get surfaceArea => luasAlas + lateralSurfaceArea;
 
   void setHeight(double height) {
+    if (height <= 0) {
+      throw ArgumentError("Height must be greater than zero.");
+    }
     this.height = height;
   }
 
   void setBase(double base) {
+    if (base <= 0) {
+      throw ArgumentError("Base must be greater than zero.");
+    }
+
     this.base = base;
   }
 
   void setApotemous(double apotemous) {
+    if (apotemous <= 0) {
+      throw ArgumentError("Apotemous must be greater than zero.");
+    }
     this.apotemous = apotemous;
   }
 }

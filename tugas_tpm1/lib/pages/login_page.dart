@@ -26,9 +26,9 @@ class _LoginPageState extends State<LoginPage> {
       await authService.signInWithEmailPassword(email, password);
     } catch (e) {
       String errorMessage = 'Terjadi kesalahan';
-      
+
       if (e is AuthException) {
-        errorMessage = e.message; 
+        errorMessage = e.message;
       } else if (e.toString().contains('SocketException')) {
         errorMessage = 'Tidak bisa terhubung ke server';
       } else {
@@ -44,110 +44,99 @@ class _LoginPageState extends State<LoginPage> {
           ),
         );
       }
-      print("ERROR AUTH: $e");  
+      print("ERROR AUTH: $e");
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(50.0),
-        child: Center(
-          child: Column( 
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("Sign In to Your Account",
-                style: TextStyle(
-                  fontSize: 50,
-                  fontWeight: FontWeight.bold
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(50.0),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Sign In to Your Account",
+                  style: TextStyle(fontSize: 50, fontWeight: FontWeight.bold),
                 ),
-              ),
 
-              Text("Enter your email and password to log in",
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey
+                Text(
+                  "Enter your email and password to log in",
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
                 ),
-              ),
-        
-              SizedBox(height: 20),
-              Text("Email",
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey
+
+                SizedBox(height: 20),
+                Text(
+                  "Email",
+                  style: TextStyle(fontSize: 13, color: Colors.grey),
                 ),
-              ),
-              _emailField(),
+                _emailField(),
 
-              SizedBox(height: 20),
-              Text("Password",
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey
+                SizedBox(height: 20),
+                Text(
+                  "Password",
+                  style: TextStyle(fontSize: 13, color: Colors.grey),
                 ),
-              ),
-              _passwordField(),
+                _passwordField(),
 
-              // Button Login
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: login, 
-        
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueAccent,
-                  foregroundColor: Colors.white,
-                  minimumSize: Size(double.infinity, 60),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)
-                  )
-                ),
-        
-                child: Text("Log in")
-              ),
+                // Button Login
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: login,
 
-              SizedBox(height: 15),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text("Don't have an account?",
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueAccent,
+                    foregroundColor: Colors.white,
+                    minimumSize: Size(double.infinity, 60),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
                   ),
 
-                  SizedBox(width: 8),
+                  child: Text("Log in"),
+                ),
 
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context, 
-                        MaterialPageRoute(
-                          builder: (context) => SignUpPage(),
-                        )
-                      );
-                    },
+                SizedBox(height: 15),
 
-                    style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      backgroundColor: Colors.transparent,
-                      foregroundColor: Colors.blue,
-                      shadowColor: Colors.transparent,
-                      overlayColor: Colors.transparent,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Don't have an account?",
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
                     ),
 
-                    child: Text("Sign Up"),
-                  ),
-                ],
-              )
-            ],
-            
-          )
+                    SizedBox(width: 8),
+
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => SignUpPage()),
+                        );
+                      },
+
+                      style: ElevatedButton.styleFrom(
+                        elevation: 0,
+                        backgroundColor: Colors.transparent,
+                        foregroundColor: Colors.blue,
+                        shadowColor: Colors.transparent,
+                        overlayColor: Colors.transparent,
+                      ),
+
+                      child: Text("Sign Up"),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ),
-      )
+      ),
     );
   }
 
@@ -161,29 +150,23 @@ class _LoginPageState extends State<LoginPage> {
           color: Colors.grey, // warna hint text
         ),
 
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(
-            color: Colors.grey,
-          ),
+          borderSide: BorderSide(color: Colors.grey),
         ),
-        
-       focusedBorder: OutlineInputBorder(
+
+        focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(
-            color: Colors.grey,
-          ),
+          borderSide: BorderSide(color: Colors.grey),
         ),
-      )
+      ),
     );
   }
 
   Widget _passwordField() {
-    return  TextField(
+    return TextField(
       controller: _passwordController,
 
       obscureText: true,
@@ -198,19 +181,14 @@ class _LoginPageState extends State<LoginPage> {
 
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(
-            color: Colors.grey,
-          ),
+          borderSide: BorderSide(color: Colors.grey),
         ),
-        
+
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(
-            color: Colors.grey,
-          ),
+          borderSide: BorderSide(color: Colors.grey),
         ),
       ),
     );
   }
-
 }

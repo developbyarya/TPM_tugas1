@@ -21,17 +21,20 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   // Getter Logika Inti: Menghitung total dari atas ke bawah
   double get _currentTotal {
     if (_steps.isEmpty) return 0;
-    
+
     double total = 0;
     for (int i = 0; i < _steps.length; i++) {
       var step = _steps[i];
-      
+
       if (i == 0) {
         total = (step.operation == '-') ? -step.value : step.value;
       } else {
-        if (step.operation == '+') total += step.value;
-        else if (step.operation == '-') total -= step.value;
-        else if (step.operation == '×') total *= step.value;
+        if (step.operation == '+')
+          total += step.value;
+        else if (step.operation == '-')
+          total -= step.value;
+        else if (step.operation == '×')
+          total *= step.value;
         else if (step.operation == '÷') {
           if (step.value != 0) {
             total /= step.value;
@@ -49,8 +52,11 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          ' $message', 
-          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)
+          ' $message',
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
         backgroundColor: Colors.red.shade600,
         behavior: SnackBarBehavior.floating, // Mengambang
@@ -64,9 +70,12 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   String _formatNumber(double n) {
     if (n.isNaN) return 'Error';
     if (n.isInfinite) return '∞';
-    return n % 1 == 0 
-        ? n.toInt().toString() 
-        : n.toStringAsFixed(4).replaceAll(RegExp(r'0*$'), '').replaceAll(RegExp(r'\.$'), '');
+    return n % 1 == 0
+        ? n.toInt().toString()
+        : n
+              .toStringAsFixed(4)
+              .replaceAll(RegExp(r'0*$'), '')
+              .replaceAll(RegExp(r'\.$'), '');
   }
 
   // Fungsi Eksekusi & Validasi (Error Handling)
@@ -103,15 +112,19 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     if (_steps.isEmpty) {
       projectedTotal = (op == '-') ? -val : val;
     } else {
-      if (op == '+') projectedTotal += val;
-      else if (op == '-') projectedTotal -= val;
-      else if (op == '×') projectedTotal *= val;
-      else if (op == '÷') projectedTotal /= val;
+      if (op == '+')
+        projectedTotal += val;
+      else if (op == '-')
+        projectedTotal -= val;
+      else if (op == '×')
+        projectedTotal *= val;
+      else if (op == '÷')
+        projectedTotal /= val;
     }
 
     // Cek batas maksimum Int 64-bit (9.22 x 10^18)
     // Jika lewat dari ini, .toInt() akan stuck di 9223372036854775807
-    if (projectedTotal.isInfinite || projectedTotal.abs() >= 9223372036854775000) {
+    if (projectedTotal.isInfinite || projectedTotal.abs() >= 9.22e18) {
       _showError('Hasil kalkulasi ditolak! Melampaui batas maksimum sistem.');
       return;
     }
@@ -160,7 +173,10 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Total Perhitungan', style: TextStyle(color: Colors.white70, fontSize: 14)),
+                  const Text(
+                    'Total Perhitungan',
+                    style: TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
                   const SizedBox(height: 8),
                   // FittedBox membantu agar teks mengecil otomatis jika angka mulai panjang
                   FittedBox(
@@ -168,7 +184,11 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                     alignment: Alignment.centerLeft,
                     child: Text(
                       _steps.isEmpty ? '0' : _formatNumber(_currentTotal),
-                      style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
@@ -179,16 +199,28 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
             // Input TextField
             TextField(
               controller: _controller,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-              maxLength: 15, 
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+                signed: true,
+              ),
+              maxLength: 15,
               decoration: InputDecoration(
                 hintText: 'Masukkan angka...',
                 filled: true,
                 fillColor: Colors.white,
-                counterText: '', 
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                counterText: '',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -196,17 +228,41 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
             // Tombol Operasi Dasar
             Row(
               children: [
-                Expanded(child: _buildOpBtn('+ Tambah', Colors.green, () => _addStep('+'))),
+                Expanded(
+                  child: _buildOpBtn(
+                    '+ Tambah',
+                    Colors.green,
+                    () => _addStep('+'),
+                  ),
+                ),
                 const SizedBox(width: 8),
-                Expanded(child: _buildOpBtn('- Kurang', Colors.red, () => _addStep('-'))),
+                Expanded(
+                  child: _buildOpBtn(
+                    '- Kurang',
+                    Colors.red,
+                    () => _addStep('-'),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 8),
             Row(
               children: [
-                Expanded(child: _buildOpBtn('× Kali', Colors.purple, () => _addStep('×'))),
+                Expanded(
+                  child: _buildOpBtn(
+                    '× Kali',
+                    Colors.purple,
+                    () => _addStep('×'),
+                  ),
+                ),
                 const SizedBox(width: 8),
-                Expanded(child: _buildOpBtn('÷ Bagi', Colors.orange, () => _addStep('÷'))),
+                Expanded(
+                  child: _buildOpBtn(
+                    '÷ Bagi',
+                    Colors.orange,
+                    () => _addStep('÷'),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 24),
@@ -215,12 +271,22 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Riwayat Kalkulasi', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                const Text(
+                  'Riwayat Kalkulasi',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
                 if (_steps.isNotEmpty)
                   TextButton.icon(
                     onPressed: _clearAll,
-                    icon: const Icon(Icons.delete_sweep, color: Colors.red, size: 18),
-                    label: const Text('Hapus Semua', style: TextStyle(color: Colors.red, fontSize: 13)),
+                    icon: const Icon(
+                      Icons.delete_sweep,
+                      color: Colors.red,
+                      size: 18,
+                    ),
+                    label: const Text(
+                      'Hapus Semua',
+                      style: TextStyle(color: Colors.red, fontSize: 13),
+                    ),
                   ),
               ],
             ),
@@ -235,23 +301,49 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                   border: Border.all(color: Colors.grey.shade200),
                 ),
                 child: _steps.isEmpty
-                    ? const Center(child: Text('Ketik angka dan pilih operator di atas', style: TextStyle(color: Colors.grey)))
+                    ? const Center(
+                        child: Text(
+                          'Ketik angka dan pilih operator di atas',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      )
                     : ListView.separated(
                         itemCount: _steps.length,
-                        separatorBuilder: (context, index) => Divider(color: Colors.grey.shade100, height: 1),
+                        separatorBuilder: (context, index) =>
+                            Divider(color: Colors.grey.shade100, height: 1),
                         itemBuilder: (context, index) {
                           final step = _steps[index];
                           return ListTile(
                             leading: Container(
                               width: 32,
                               height: 32,
-                              decoration: BoxDecoration(color: Colors.blue.shade50, borderRadius: BorderRadius.circular(8)),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.shade50,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                               alignment: Alignment.center,
-                              child: Text(step.operation, style: const TextStyle(color: Color(0xFF3267E3), fontSize: 18, fontWeight: FontWeight.bold)),
+                              child: Text(
+                                step.operation,
+                                style: const TextStyle(
+                                  color: Color(0xFF3267E3),
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
-                            title: Text(_formatNumber(step.value), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                            title: Text(
+                              _formatNumber(step.value),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
+                              ),
+                            ),
                             trailing: IconButton(
-                              icon: const Icon(Icons.close, color: Colors.grey, size: 20),
+                              icon: const Icon(
+                                Icons.close,
+                                color: Colors.grey,
+                                size: 20,
+                              ),
                               onPressed: () => _removeStep(index),
                             ),
                           );
@@ -274,7 +366,14 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         elevation: 0,
       ),
       onPressed: onPressed,
-      child: Text(text, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: 13,
+        ),
+      ),
     );
   }
 }

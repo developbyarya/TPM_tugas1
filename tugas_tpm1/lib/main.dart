@@ -8,6 +8,7 @@ import 'package:tugas_tpm1/pages/stopwatch_screen.dart';
 import 'package:tugas_tpm1/pages/sum_calculator_screen.dart';
 import 'package:tugas_tpm1/pages/team.dart';
 import 'pages/calculator_screen.dart';
+import 'pages/date_calculator_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,6 +40,7 @@ class MyApp extends StatelessWidget {
         '/sum-calculator': (context) => const CharacterCounterScreen(),
         '/stopwatch': (context) => const StopwatchScreen(),
         '/pyramid': (context) => PyramidScreen(),
+        '/date-calculator': (context) => const DateCalculatorScreen(),
       },
     );
   }
